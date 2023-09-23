@@ -1,46 +1,55 @@
 package edu.escuelaing.service.impl;
 
 import edu.escuelaing.entity.User;
+import edu.escuelaing.repository.UserRepository;
 import edu.escuelaing.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private Map<String, User> userMap = new HashMap<>();
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public User createUser(User user) {
-        userMap.put(user.getId(), user);
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
     public Optional<User> getUserById(String userId) {
-        return Optional.ofNullable(userMap.get(userId));
+        return userRepository.findById(userId);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return new ArrayList<>(userMap.values());
+        return userRepository.findAll();
     }
 
     @Override
-    public User updateUser(String userId, User updatedUser) {
-        if (userMap.containsKey(userId)) {
-            userMap.put(userId, updatedUser);
-            return updatedUser;
-        }
-        return null;
+    public Optional<User> updateUser(String userId, User updatedUser) {
+        return userRepository.findById(userId).map(existingUser -> {
+            if (updatedUser.getName() != null) {
+                existingUser.setName(updatedUser.getName());
+            }
+            if (updatedUser.getEmail() != null) {
+                existingUser.setEmail(updatedUser.getEmail());
+            }
+            return userRepository.save(existingUser);
+        });
     }
 
     @Override
     public void deleteUser(String userId) {
-        userMap.remove(userId);
+        userRepository.deleteById(userId);
     }
 
 }

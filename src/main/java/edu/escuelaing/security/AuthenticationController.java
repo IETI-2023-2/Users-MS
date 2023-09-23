@@ -30,6 +30,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) {
         // Autenticar al usuario utilizando el AuthenticationManager
+        System.out.println("AAAAAAAAAAAAA");
 
         // Generar un token JWT si la autenticación es exitosa
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());

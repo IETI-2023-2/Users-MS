@@ -72,7 +72,7 @@ public class UserControllerTest {
     public void testUpdateUser_ExistingUser() {
         String userId = "1";
         User updatedUser = new User(userId, "carol", "carol@mail");
-        when(userService.updateUser(userId, updatedUser)).thenReturn(updatedUser);
+        when(userService.updateUser(userId, updatedUser)).thenReturn(Optional.of(updatedUser));
 
         ResponseEntity<User> response = userController.updateUser(userId, updatedUser);
 

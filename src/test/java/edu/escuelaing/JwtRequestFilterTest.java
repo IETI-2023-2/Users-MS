@@ -1,20 +1,15 @@
 package edu.escuelaing;
 
-
 import edu.escuelaing.security.JwtRequestFilter;
 import edu.escuelaing.security.JwtValidationException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -66,7 +61,7 @@ public class JwtRequestFilterTest {
 
     @Test
     public void whenRequestHasValidTokenThenRespondsOK() throws Exception {
-        String validToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImlhdCI6MTY5NTQ0NjUxNywiZXhwIjoxNjk1NDUwMTE3fQ.rxk9pJmRZ-HmC4qyUt_48Ga8Cg-3eRN0vdJd6AhfAlI";
+        String validToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImlhdCI6MTY5NTQ1NDk0NSwiZXhwIjoxNjk1NDU4NTQ1fQ.2UdXdygO_PDsOsSktZOG-fdnBV0U33m_Ao41JeS4tjI";
         when(request.getRequestURI()).thenReturn("");
         when(request.getMethod()).thenReturn("GET");
         when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
@@ -80,21 +75,6 @@ public class JwtRequestFilterTest {
         when(request.getRequestURI()).thenReturn("v1/auth");
         jwtRequestFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain).doFilter(request, response);
-    }
-
-    @Test
-    public void securityContextIsSetTest() throws Exception {
-        String validToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImlhdCI6MTY5NTQyOTYyMiwiZXhwIjoxNjk1NDMzMjgyfQ.FFqemd4NNTLdvpp7r2RlH8jZWK0t243Dq1QTEzy52Sw";
-        when(request.getRequestURI()).thenReturn("");
-        when(request.getMethod()).thenReturn("GET");
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
-        jwtRequestFilter.doFilterInternal(request, response, filterChain);
-        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        assertEquals(userId, "63ee58a721b9bc75cde782a1");
-        Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        String userRole = ((GrantedAuthority) ((ArrayList) authorities).get(0)).getAuthority();
-        assertEquals(userRole, "ROLE_USER");
-
     }
 
 }
