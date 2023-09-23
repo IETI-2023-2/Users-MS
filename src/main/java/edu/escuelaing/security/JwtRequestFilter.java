@@ -22,21 +22,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     String MISSING_TOKEN_ERROR_MESSAGE = "Missing or wrong token";
 
     private UserDetailsService userDetailsService;
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    public JwtRequestFilter() {
-        setJwtUtil();
-    }
 
     @Autowired
     public void setUserDetailsService() {
         this.userDetailsService = username -> null;
-    }
-
-    @Autowired
-    public void setJwtUtil() {
-        this.jwtUtil = new JwtUtil();
     }
 
     @Override
@@ -50,7 +39,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+            username = JwtUtil.extractUsername(jwt);
             System.out.println("Username: " + username);
         }else{
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -63,7 +52,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     .roles("USER")
                     .build();
 
-            if (jwtUtil.isTokenValid(jwt, userDetails)) {
+            if (JwtUtil.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

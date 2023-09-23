@@ -1,10 +1,14 @@
 package edu.escuelaing;
 
 import edu.escuelaing.security.JwtRequestFilter;
+import edu.escuelaing.security.JwtUtil;
 import edu.escuelaing.security.JwtValidationException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.servlet.FilterChain;
@@ -26,6 +30,12 @@ public class JwtRequestFilterTest {
     private HttpServletResponse response;
     @Mock
     private FilterChain filterChain;
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private Long expiration;
 
     @Test
     public void whenRequestHasNoAuthorizationHeaderThenRespondsUnauthorizedStatus() throws Exception {
@@ -49,9 +59,16 @@ public class JwtRequestFilterTest {
 
     @Test
     public void whenRequestHasInvalidTokenThenRespondsUnauthorized() throws Exception {
+        UserDetails userDetails = User.withUsername("testUser")
+                .password("password")
+                .authorities("ROLE_USER")
+                .build();
+
+        String token = JwtUtil.generateToken(userDetails, 1L, secret);
+
         when(request.getRequestURI()).thenReturn("");
         when(request.getMethod()).thenReturn("GET");
-        when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImlhdCI6MTY5NTQ0Mzc2MiwiZXhwIjoxNjk1NDQzNzY1fQ.ebd17mGjNdYXTbnXWYvKGGysBk_45cWlLFWr-6M8hoE");
+        when(request.getHeader("Authorization")).thenReturn("Bearer "+ token);
         Exception exception = assertThrows(JwtValidationException.ExpiredJwtException.class, () -> {
             jwtRequestFilter.doFilterInternal(request, response, filterChain);
         });
@@ -61,7 +78,13 @@ public class JwtRequestFilterTest {
 
     @Test
     public void whenRequestHasValidTokenThenRespondsOK() throws Exception {
-        String validToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0VXNlciIsImlhdCI6MTY5NTQ1NDk0NSwiZXhwIjoxNjk1NDU4NTQ1fQ.2UdXdygO_PDsOsSktZOG-fdnBV0U33m_Ao41JeS4tjI";
+        UserDetails userDetails = User.withUsername("testUser")
+                .password("password")
+                .authorities("ROLE_USER")
+                .build();
+
+        String validToken = JwtUtil.generateToken(userDetails, expiration, secret);
+
         when(request.getRequestURI()).thenReturn("");
         when(request.getMethod()).thenReturn("GET");
         when(request.getHeader("Authorization")).thenReturn("Bearer " + validToken);
