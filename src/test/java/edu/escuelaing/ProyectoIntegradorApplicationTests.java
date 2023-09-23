@@ -1,4 +1,4 @@
-package edu.escuelaing.Proyecto_integrador;
+package edu.escuelaing;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
