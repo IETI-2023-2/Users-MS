@@ -1,10 +1,13 @@
 package edu.escuelaing.security;
 
+import edu.escuelaing.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,11 +19,18 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
+    private static UserService userService;
+
     @Value("${jwt.secret}")
     private static String secret = "dclVEBLJP7wBEXkGuWPM5PlwWPFCBjBtd8xPj0+71jk";
 
     @Value("${jwt.expiration}")
-    private Long expiration = 3L;
+    private Long expiration = 0L;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        JwtUtil.userService = userService;
+    }
 
     public static String extractUsername(String token) {
         try {
@@ -106,6 +116,19 @@ public class JwtUtil {
         } catch (Exception e) {
             throw new JwtValidationException.InvalidJwtSignatureException("Firma JWT inválida");
         }
+    }
+
+    public static UserDetails createUser(String username){
+        String password = userService.getPasswordByUsername(username);
+        String role = userService.getRoleByUsername(username);
+        return User.withUsername(username)
+                .password(password)
+                .roles(role)
+                .build();
+    }
+
+    public static boolean isPasswordValid(edu.escuelaing.entity.User user, String password) {
+        return user.getPassword().equals(password);
     }
 }
 

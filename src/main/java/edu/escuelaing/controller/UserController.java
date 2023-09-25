@@ -1,4 +1,5 @@
 package edu.escuelaing.controller;
+
 import edu.escuelaing.entity.User;
 import edu.escuelaing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ public class UserController {
     public ResponseEntity<User> getUserById(@PathVariable String id) {
         Optional<User> user = userService.getUserById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/user/{id}")
+    public String getPasswordByUsername(@PathVariable String id) {
+        return userService.getPasswordByUsername(id);
     }
 
     @PostMapping("/create")

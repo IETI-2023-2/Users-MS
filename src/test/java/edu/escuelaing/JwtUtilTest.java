@@ -34,7 +34,7 @@ public class JwtUtilTest {
                 .authorities("ROLE_USER")
                 .build();
 
-        String token = JwtUtil.generateToken(userDetails, expiration, secret);
+        String token = JwtUtil.generateToken(userDetails, 3600L, secret);
 
         assertNotNull(token);
         assertTrue(token.length() > 0);
@@ -89,7 +89,7 @@ public class JwtUtilTest {
                 .authorities("ROLE_USER")
                 .build();
 
-        String token = JwtUtil.generateToken(userDetails, 1L, secret);
+        String token = JwtUtil.generateToken(userDetails, expiration, secret);
 
         assertFalse(JwtUtil.isTokenExpired(token));
     }

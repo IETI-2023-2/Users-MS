@@ -17,4 +17,8 @@ public interface UserService {
 
     void deleteUser(String userId);
 
+    String getPasswordByUsername(String username);
+
+    String getRoleByUsername(String username);
+
 }

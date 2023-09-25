@@ -52,4 +52,31 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
     }
 
+    @Override
+    public String getPasswordByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        try{
+            if (user != null) {
+                return user.getPassword();
+            }
+        }catch (Exception e) {
+            System.out.println("Usuario no encontrado");
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public String getRoleByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        try{
+            if (user != null) {
+                return user.getRole();
+            }
+        }catch (Exception e) {
+            System.out.println("Usuario no encontrado");
+            return null;
+        }
+        return null;
+    }
 }

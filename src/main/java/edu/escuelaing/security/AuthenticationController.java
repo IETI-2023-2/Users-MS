@@ -1,15 +1,25 @@
 package edu.escuelaing.security;
 
+import edu.escuelaing.repository.UserRepository;
 import edu.escuelaing.security.dto.AuthenticationResponse;
 import edu.escuelaing.security.dto.LoginRequest;
+import edu.escuelaing.entity.User;
+import edu.escuelaing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 
 @RestController
 public class AuthenticationController {
@@ -20,23 +30,46 @@ public class AuthenticationController {
     @Value("${jwt.expiration}")
     private Long expiration;
 
-    private UserDetailsService userDetailsService;
+    private AuthenticationManager authenticationManager;
+
+    private UserRepository userRepository;
 
     @Autowired
-    public void setUserDetailsService(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Autowired
+    public AuthenticationController(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) {
-        // Autenticar al usuario utilizando el AuthenticationManager
-        System.out.println("AAAAAAAAAAAAA");
+        User user = userRepository.findByUsername(loginRequest.getUsername());
+        if (user != null && JwtUtil.isPasswordValid(user, loginRequest.getPassword())) {
 
-        // Generar un token JWT si la autenticación es exitosa
-        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
-        String jwt = JwtUtil.generateToken(userDetails, expiration, secret);
+            UserDetails userDetails = JwtUtil.createUser(loginRequest.getUsername());
 
-        // Devolver el token JWT en la respuesta
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = JwtUtil.generateToken(userDetails, expiration, secret);
+
+            return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        }else{
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        // Invalidar el token actual
+
+        return ResponseEntity.ok("Sesión cerrada exitosamente");
+    }
+
 }

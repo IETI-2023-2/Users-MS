@@ -3,8 +3,10 @@ package edu.escuelaing;
 import edu.escuelaing.security.JwtRequestFilter;
 import edu.escuelaing.security.JwtUtil;
 import edu.escuelaing.security.JwtValidationException;
+import edu.escuelaing.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.User;
@@ -23,7 +25,8 @@ import static org.mockito.Mockito.*;
 @TestPropertySource(properties = {"spring.data.mongodb.uri=mongodb://localhost/testdb", "jwt.secret=dclVEBLJP7wBEXkGuWPM5PlwWPFCBjBtd8xPj0+71jk"})
 public class JwtRequestFilterTest {
 
-    private final JwtRequestFilter jwtRequestFilter = new JwtRequestFilter();
+    @Autowired
+    private JwtRequestFilter jwtRequestFilter;
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -61,10 +64,10 @@ public class JwtRequestFilterTest {
     public void whenRequestHasInvalidTokenThenRespondsUnauthorized() throws Exception {
         UserDetails userDetails = User.withUsername("testUser")
                 .password("password")
-                .authorities("ROLE_USER")
+                .authorities("USER")
                 .build();
 
-        String token = JwtUtil.generateToken(userDetails, 1L, secret);
+        String token = JwtUtil.generateToken(userDetails, 0L, secret);
 
         when(request.getRequestURI()).thenReturn("");
         when(request.getMethod()).thenReturn("GET");
@@ -80,7 +83,7 @@ public class JwtRequestFilterTest {
     public void whenRequestHasValidTokenThenRespondsOK() throws Exception {
         UserDetails userDetails = User.withUsername("testUser")
                 .password("password")
-                .authorities("ROLE_USER")
+                .authorities("USER")
                 .build();
 
         String validToken = JwtUtil.generateToken(userDetails, expiration, secret);
